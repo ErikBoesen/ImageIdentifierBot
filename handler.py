@@ -12,9 +12,6 @@ import boto3
 from botocore.exceptions import ClientError
 
 
-def receive(event, context):
-
-
 def process(message):
     # Prevent self-reply
     if message['sender_type'] != 'bot':
@@ -36,7 +33,7 @@ def send(text, bot_id):
 logger = logging.getLogger(__name__)
 
 # Get the model ARN and confidence.
-model_arn = environ['MODEL_ARN']
+model_arn = environ.get('MODEL_ARN')
 min_confidence = int(environ.get('CONFIDENCE', 50))
 
 # Get the boto3 client.
