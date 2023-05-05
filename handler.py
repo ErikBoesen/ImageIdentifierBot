@@ -12,6 +12,9 @@ import boto3
 from botocore.exceptions import ClientError
 
 
+MAX_MESSAGE_LENGTH = 1000
+
+
 def process(message):
     # Prevent self-reply
     if message['sender_type'] != 'bot':
@@ -21,6 +24,13 @@ def process(message):
 
 def send(text, bot_id):
     url = 'https://api.groupme.com/v3/bots/post'
+
+    if len(text) > MAX_MESSAGE_LENGTH:
+        # If text is too long for one message, split it up over several
+        for block in [text[i:i + MAX_MESSAGE_LENGTH] for i in range(0, len(text), MAX_MESSAGE_LENGTH)]:
+            send(block, bot_id)
+            time.sleep(0.3)
+        return
 
     message = {
         'bot_id': bot_id,
