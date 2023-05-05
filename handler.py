@@ -59,41 +59,38 @@ def get_image_base64(url):
 
 def receive(event, context):
     message = json.loads(event['body'])
-
     bot_id = message['bot_id']
-    response = process(message)
-    if response:
-        send(response, bot_id)
+    source_url = get_source_url(message)
+    if source_url is not None:
+        try:
+            # Decode the image
+            image_bytes = get_image_base64(source_url).encode('utf-8')
+            img_b64decoded = base64.b64decode(image_bytes)
+            image = {'Bytes': img_b64decoded}
 
-    try:
-        # Decode the image
-        image_bytes = event['image'].encode('utf-8')
-        img_b64decoded = base64.b64decode(image_bytes)
-        image = {'Bytes': img_b64decoded}
+            # Analyze the image.
+            response = rek_client.detect_custom_labels(Image=image,
+                MinConfidence=min_confidence,
+                ProjectVersionArn=model_arn)
 
-        # Analyze the image.
-        response = rek_client.detect_custom_labels(Image=image,
-            MinConfidence=min_confidence,
-            ProjectVersionArn=model_arn)
+            # Get the custom labels
+            labels = response['CustomLabels']
+            print('Got labels: ' + str(labels))
 
-        # Get the custom labels
-        labels = response['CustomLabels']
-        print('Got labels: ' + str(labels))
-
-        send(json.dumps(labels), bot_id)
-    except ClientError as err:
-        error_message = f'Couldn\'t analyze image. ' + \
-            err.response['Error']['Message']
-        send(error_message, bot_id)
-    except ValueError as val_error:
-        lambda_response = {
-            'statusCode': 400,
-            'body': {
-                'Error': 'ValueError',
-                'ErrorMessage': format(val_error)
+            send(json.dumps(labels), bot_id)
+        except ClientError as err:
+            error_message = f'Couldn\'t analyze image. ' + \
+                err.response['Error']['Message']
+            send(error_message, bot_id)
+        except ValueError as val_error:
+            lambda_response = {
+                'statusCode': 400,
+                'body': {
+                    'Error': 'ValueError',
+                    'ErrorMessage': format(val_error)
+                }
             }
-        }
-        send('Error function %s: %s' % (context.invoked_function_arn, format(val_error)), bot_id)
+            send('Error function %s: %s' % (context.invoked_function_arn, format(val_error)), bot_id)
 
     return {
         'statusCode': 200,
