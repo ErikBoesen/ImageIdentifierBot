@@ -33,8 +33,6 @@ def send(text, bot_id):
 logger = logging.getLogger(__name__)
 
 # Get the model ARN and confidence.
-model_arn = environ.get('MODEL_ARN')
-min_confidence = int(environ.get('CONFIDENCE', 50))
 
 # Get the boto3 client.
 rek_client = boto3.client('rekognition')
@@ -70,12 +68,14 @@ def receive(event, context):
             image = {'Bytes': img_b64decoded}
 
             # Analyze the image.
-            response = rek_client.detect_custom_labels(Image=image,
-                MinConfidence=min_confidence,
-                ProjectVersionArn=model_arn)
+            response = rek_client.detect_labels(
+                Image=image,
+                MaxLabels=20,
+                MinConfidence=40,
+            )
 
             # Get the custom labels
-            labels = response['CustomLabels']
+            labels = response['Labels']
             print('Got labels: ' + str(labels))
 
             send(json.dumps(labels), bot_id)
