@@ -65,7 +65,7 @@ def receive(event, context):
     if source_url is not None:
         try:
             # Decode the image
-            image_bytes = get_image_base64(source_url).encode('utf-8')
+            image_bytes = get_image_base64(source_url)
             img_b64decoded = base64.b64decode(image_bytes)
             image = {'Bytes': img_b64decoded}
 
