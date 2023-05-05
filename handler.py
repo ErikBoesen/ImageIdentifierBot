@@ -89,7 +89,7 @@ def receive(event, context):
             print('Got labels: ' + str(labels))
             message = '\n'.join(
                 [
-                    '{}: {.3f}'.format(label['Name'], label['Confidence'])
+                    '{}: {:.3f}'.format(label['Name'], label['Confidence'])
                     for label in labels
                 ]
             )
