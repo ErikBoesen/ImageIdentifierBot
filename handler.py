@@ -61,6 +61,7 @@ def receive(event, context):
     message = json.loads(event['body'])
     bot_id = message['bot_id']
     source_url = get_source_url(message)
+    print('Found source URL: {}'.format(source_url))
     if source_url is not None:
         try:
             # Decode the image
