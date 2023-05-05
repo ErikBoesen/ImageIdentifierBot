@@ -80,15 +80,21 @@ def receive(event, context):
             # Analyze the image.
             response = rek_client.detect_labels(
                 Image=image,
-                MaxLabels=20,
+                MaxLabels=10,
                 MinConfidence=40,
             )
 
             # Get the custom labels
             labels = response['Labels']
             print('Got labels: ' + str(labels))
+            message = '\n'.join(
+                [
+                    '{}: {.3f}'.format(label['Name'], label['Confidence'])
+                    for label in labels
+                ]
+            )
 
-            send(json.dumps(labels), bot_id)
+            send(message, bot_id)
         except ClientError as err:
             error_message = f'Couldn\'t analyze image. ' + \
                 err.response['Error']['Message']
