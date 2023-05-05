@@ -89,12 +89,12 @@ def receive(event, context):
             print('Got labels: ' + str(labels))
             message = '\n'.join(
                 [
-                    '{}: {:.3f}'.format(label['Name'], label['Confidence'])
+                    '{}: {:.3f}%'.format(label['Name'], label['Confidence'])
                     for label in labels
                 ]
             )
 
-            send(message, bot_id)
+            send('Identified objects:\n\n' + message, bot_id)
         except ClientError as err:
             error_message = f'Couldn\'t analyze image. ' + \
                 err.response['Error']['Message']
